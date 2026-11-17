@@ -2,33 +2,34 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\FiberCabinet;
 use App\Models\RepairTicket;
-use Illuminate\Http\Request;
+use App\Models\Subscriber;
+use App\Http\Requests\RepairTicketRequest;
+use App\Services\RepairTicketService;
+use Inertia\Inertia;
 
 class RepairTicketController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct(private RepairTicketService $service)
+    {
+    }
+
     public function index()
     {
-        //
+        return Inertia::render('repair-tickets/index', ['tickets' => $this->service->getRecords()]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        return Inertia::render('repair-tickets/form', $this->formOptions());
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(RepairTicketRequest $request)
     {
-        //
+        $this->service->create($request->validated());
+
+        return to_route('repair-tickets.index')->with('success', 'Repair ticket created.');
     }
 
     /**
@@ -36,7 +37,9 @@ class RepairTicketController extends Controller
      */
     public function show(RepairTicket $repairTicket)
     {
-        //
+        return Inertia::render('repair-tickets/show', [
+            'ticket' => $this->service->find($repairTicket->ticket_id),
+        ]);
     }
 
     /**
@@ -44,15 +47,20 @@ class RepairTicketController extends Controller
      */
     public function edit(RepairTicket $repairTicket)
     {
-        //
+        return Inertia::render('repair-tickets/form', [
+            ...$this->formOptions(),
+            'ticket' => $this->service->find($repairTicket->ticket_id),
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, RepairTicket $repairTicket)
+    public function update(RepairTicketRequest $request, RepairTicket $repairTicket)
     {
-        //
+        $this->service->update($repairTicket, $request->validated());
+
+        return to_route('repair-tickets.index')->with('success', 'Repair ticket updated.');
     }
 
     /**
@@ -60,6 +68,28 @@ class RepairTicketController extends Controller
      */
     public function destroy(RepairTicket $repairTicket)
     {
-        //
+        $this->service->delete($repairTicket);
+
+        return back()->with('success', 'Repair ticket deleted.');
+    }
+
+    private function formOptions(): array
+    {
+        return [
+            'subscribers' => Subscriber::query()->orderBy('subscriber_account')->get(['subscriber_account', 'subscriber_name']),
+            'cabinets' => FiberCabinet::query()->orderBy('cabinet_code')->get(['cabinet_code', 'fault_location']),
+            'issueTypes' => [
+                'No Internet Connection',
+                'Intermittent Connection',
+                'Fiber Cable Cut',
+                'Low Signal Strength',
+                'Damaged Fiber Cabinet',
+                'Fiber Loss / Attenuation',
+                'Port or Patch Cord Failure',
+                'Power Failure at Cabinet',
+                'Subscriber Line Outage',
+                'Other',
+            ],
+        ];
     }
 }

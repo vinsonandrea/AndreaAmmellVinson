@@ -12,6 +12,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('ticket_id');
             $table->dateTime('repair_start')->nullable();
             $table->dateTime('repair_end')->nullable(); // Completion timestamp
+            $table->decimal('labor_hours', 8, 2)->default(0);
             $table->integer('splice_count')->default(0);
             $table->decimal('repair_cost', 10, 2)->default(0.00); // Calculated based on labor & splices
 

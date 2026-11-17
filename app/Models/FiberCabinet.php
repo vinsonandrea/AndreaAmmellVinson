@@ -12,7 +12,7 @@ class FiberCabinet extends Model
     public $incrementing = false;
     protected $keyType = 'string';
 
-    protected $fillable = ['cabinet_code', 'fault_location'];
+    protected $fillable = ['cabinet_code', 'cabinet_type', 'fault_location'];
 
     // Enforce upper-case business rule on cabinet code assignment
     public function setCabinetCodeAttribute($value)

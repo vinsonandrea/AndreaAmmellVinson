@@ -2,17 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SubscriberRequest;
 use App\Models\Subscriber;
-use Illuminate\Http\Request;
+use App\Services\SubscriberService;
+use Inertia\Inertia;
 
 class SubscriberController extends Controller
 {
+    public function __construct(private SubscriberService $service)
+    {
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        return Inertia::render('subscribers/index', ['subscribers' => $this->service->getRecords()]);
     }
 
     /**
@@ -20,15 +26,19 @@ class SubscriberController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('subscribers/form', [
+            'generatedAccount' => $this->service->nextAccountNumberPreview(),
+        ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(SubscriberRequest $request)
     {
-        //
+        $this->service->create($request->validated());
+
+        return to_route('subscribers.index')->with('success', 'Subscriber created.');
     }
 
     /**
@@ -36,7 +46,9 @@ class SubscriberController extends Controller
      */
     public function show(Subscriber $subscriber)
     {
-        //
+        return Inertia::render('subscribers/show', [
+            'subscriber' => $this->service->find($subscriber->subscriber_account),
+        ]);
     }
 
     /**
@@ -44,15 +56,20 @@ class SubscriberController extends Controller
      */
     public function edit(Subscriber $subscriber)
     {
-        //
+        return Inertia::render('subscribers/form', [
+            'subscriber' => $this->service->find($subscriber->subscriber_account),
+            'generatedAccount' => $subscriber->subscriber_account,
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Subscriber $subscriber)
+    public function update(SubscriberRequest $request, Subscriber $subscriber)
     {
-        //
+        $this->service->update($subscriber, $request->validated());
+
+        return to_route('subscribers.index')->with('success', 'Subscriber updated.');
     }
 
     /**
@@ -60,6 +77,8 @@ class SubscriberController extends Controller
      */
     public function destroy(Subscriber $subscriber)
     {
-        //
+        $this->service->delete($subscriber);
+
+        return back()->with('success', 'Subscriber deleted.');
     }
 }

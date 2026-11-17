@@ -14,7 +14,9 @@ class RepairLog extends Model
         'ticket_id',
         'repair_start',
         'repair_end',
+        'labor_hours',
         'splice_count',
+        'notes',
         'repair_cost'
     ];
 
